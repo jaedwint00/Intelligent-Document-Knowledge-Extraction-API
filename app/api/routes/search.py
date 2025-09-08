@@ -17,14 +17,14 @@ router = APIRouter()
 
 def get_nlp_service() -> NLPService:
     """Dependency to get NLP service"""
-    from app.main import app
+    from app.main import app  # pylint: disable=import-outside-toplevel
 
     return app.state.nlp_service
 
 
 def get_vector_service() -> VectorService:
     """Dependency to get vector service"""
-    from app.main import app
+    from app.main import app  # pylint: disable=import-outside-toplevel
 
     return app.state.vector_service
 
@@ -231,9 +231,8 @@ async def reindex_documents(
         # Get documents to reindex
         if document_ids:
             # Reindex specific documents
-            query = "SELECT document_id FROM documents WHERE document_id IN ({})".format(
-                ",".join(["?" for _ in document_ids])
-            )
+            placeholders = ",".join(["?" for _ in document_ids])
+            query = f"SELECT document_id FROM documents WHERE document_id IN ({placeholders})"
             results = vector_service.db_conn.execute(query, document_ids).fetchall()
         else:
             # Reindex all documents
@@ -257,7 +256,7 @@ async def reindex_documents(
 
                     reindexed_count += 1
 
-            except Exception as e:
+            except (ValueError, FileNotFoundError, RuntimeError, IOError) as e:
                 logger.error(f"Error reindexing document {doc_id}: {str(e)}")
                 continue
 

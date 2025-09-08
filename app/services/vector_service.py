@@ -4,14 +4,15 @@ Vector database service using FAISS and DuckDB for semantic search
 
 import os
 import pickle
-from typing import List, Dict, Any, Optional
-import numpy as np
-import faiss
+from typing import Any, Dict, List, Optional
+
 import duckdb
+import faiss  # type: ignore
+import numpy as np
 from loguru import logger
 
 from app.core.config import settings
-from app.models.schemas import TextChunk, SearchResult, DocumentMetadata
+from app.models.schemas import DocumentMetadata, SearchResult, TextChunk
 
 
 class VectorService:

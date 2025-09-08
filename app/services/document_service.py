@@ -121,7 +121,7 @@ class DocumentService:
         try:
             file_type = magic.from_buffer(file_content, mime=True)
             logger.debug(f"Detected file type: {file_type}")
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             logger.warning(f"Could not detect file type: {str(e)}")
 
     def _get_document_type(self, filename: str) -> DocumentType:

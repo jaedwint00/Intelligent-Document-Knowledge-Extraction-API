@@ -7,13 +7,13 @@ import uuid
 import asyncio
 from typing import List
 from datetime import datetime
-import aiofiles
+import aiofiles  # type: ignore
 import magic
 from loguru import logger
 
 # Document processing imports
 import PyPDF2
-from docx import Document as DocxDocument
+from docx import Document as DocxDocument  # type: ignore
 
 from app.core.config import settings
 from app.models.schemas import DocumentType, DocumentMetadata, TextChunk

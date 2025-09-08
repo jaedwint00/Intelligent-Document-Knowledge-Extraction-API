@@ -22,14 +22,14 @@ router = APIRouter()
 
 def get_nlp_service() -> NLPService:
     """Dependency to get NLP service"""
-    from app.main import app
+    from app.main import app  # pylint: disable=import-outside-toplevel
 
     return app.state.nlp_service
 
 
 def get_vector_service() -> VectorService:
     """Dependency to get vector service"""
-    from app.main import app
+    from app.main import app  # pylint: disable=import-outside-toplevel
 
     return app.state.vector_service
 
@@ -202,7 +202,7 @@ async def batch_summarize(
                     }
                 )
 
-            except Exception as e:
+            except (ValueError, FileNotFoundError, RuntimeError) as e:
                 results.append({"document_id": document_id, "error": str(e)})
 
         return {

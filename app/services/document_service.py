@@ -27,9 +27,7 @@ class DocumentService:
         self.max_file_size = settings.MAX_FILE_SIZE
         self.allowed_extensions = settings.ALLOWED_EXTENSIONS
 
-    async def upload_document(
-        self, file_content: bytes, filename: str
-    ) -> DocumentMetadata:
+    async def upload_document(self, file_content: bytes, filename: str) -> DocumentMetadata:
         """Upload and process a document"""
 
         # Validate file
@@ -111,21 +109,20 @@ class DocumentService:
         # Check file size
         if len(file_content) > self.max_file_size:
             raise ValueError(
-                f"File size exceeds maximum allowed size of "
-                f"{self.max_file_size} bytes"
+                f"File size exceeds maximum allowed size of " f"{self.max_file_size} bytes"
             )
 
         # Check file extension
         file_ext = os.path.splitext(filename)[1].lower()
-        if file_ext not in self.allowed_extensions:
+        if file_ext not in list(self.allowed_extensions):
             raise ValueError(f"File extension {file_ext} not allowed")
 
         # Check file type using magic
         try:
             file_type = magic.from_buffer(file_content, mime=True)
             logger.debug(f"Detected file type: {file_type}")
-        except Exception:
-            logger.warning("Could not detect file type")
+        except Exception as e:
+            logger.warning(f"Could not detect file type: {str(e)}")
 
     def _get_document_type(self, filename: str) -> DocumentType:
         """Determine document type from filename"""

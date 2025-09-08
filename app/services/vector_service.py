@@ -247,7 +247,7 @@ class VectorService:
             )  # Get more results for filtering
 
             results = []
-            for i, (similarity, index_id) in enumerate(zip(similarities[0], indices[0])):
+            for similarity, index_id in zip(similarities[0], indices[0]):
                 if similarity < similarity_threshold:
                     continue
 

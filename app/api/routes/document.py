@@ -21,14 +21,14 @@ def get_document_service() -> DocumentService:
 
 def get_nlp_service() -> NLPService:
     """Dependency to get NLP service"""
-    from app.main import app
+    from app.main import app  # pylint: disable=import-outside-toplevel
 
     return app.state.nlp_service
 
 
 def get_vector_service() -> VectorService:
     """Dependency to get vector service"""
-    from app.main import app
+    from app.main import app  # pylint: disable=import-outside-toplevel
 
     return app.state.vector_service
 
@@ -72,7 +72,7 @@ async def process_document_background(
 
         logger.info(f"Successfully processed document: {document_id}")
 
-    except Exception as e:
+    except (ValueError, FileNotFoundError, RuntimeError, IOError) as e:
         logger.error(f"Error processing document {document_id}: {str(e)}")
         # In production, you might want to update document status to "failed"
 

@@ -6,7 +6,7 @@ import asyncio
 from typing import List, Any
 from concurrent.futures import ThreadPoolExecutor
 import torch
-from transformers import pipeline, Pipeline
+from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from loguru import logger
 from joblib import Parallel, delayed
@@ -32,7 +32,7 @@ class NLPService:
         logger.info(f"NLP Service initialized with device: {self.device}")
 
     @property
-    def summarization_pipeline(self) -> Pipeline:
+    def summarization_pipeline(self) -> Any:
         """Lazy load summarization pipeline"""
         if self._summarization_pipeline is None:
             logger.info("Loading summarization model...")
@@ -45,7 +45,7 @@ class NLPService:
         return self._summarization_pipeline
 
     @property
-    def qa_pipeline(self) -> Pipeline:
+    def qa_pipeline(self) -> Any:
         """Lazy load Q&A pipeline"""
         if self._qa_pipeline is None:
             logger.info("Loading Q&A model...")
@@ -58,7 +58,7 @@ class NLPService:
         return self._qa_pipeline
 
     @property
-    def ner_pipeline(self) -> Pipeline:
+    def ner_pipeline(self) -> Any:
         """Lazy load NER pipeline"""
         if self._ner_pipeline is None:
             logger.info("Loading NER model...")
@@ -98,9 +98,7 @@ class NLPService:
             # Calculate metrics
             original_length = len(text.split())
             summary_length = len(summary.split())
-            compression_ratio = (
-                summary_length / original_length if original_length > 0 else 0
-            )
+            compression_ratio = summary_length / original_length if original_length > 0 else 0
 
             response = SummarizationResponse(
                 summary=summary,
@@ -120,9 +118,7 @@ class NLPService:
         try:
             # Run Q&A in thread pool
             loop = asyncio.get_event_loop()
-            qa_result = await loop.run_in_executor(
-                self.executor, self._qa_sync, question, context
-            )
+            qa_result = await loop.run_in_executor(self.executor, self._qa_sync, question, context)
 
             response = QAResponse(
                 answer=qa_result["answer"],
@@ -142,9 +138,7 @@ class NLPService:
         try:
             # Run NER in thread pool
             loop = asyncio.get_event_loop()
-            ner_results = await loop.run_in_executor(
-                self.executor, self._ner_sync, text
-            )
+            ner_results = await loop.run_in_executor(self.executor, self._ner_sync, text)
 
             # Convert to Entity objects
             entities = []
@@ -181,9 +175,7 @@ class NLPService:
             logger.error(f"Error generating embeddings: {str(e)}")
             raise
 
-    async def batch_process_chunks(
-        self, chunks: List[str], task: str = "embeddings"
-    ) -> List[Any]:
+    async def batch_process_chunks(self, chunks: List[str], task: str = "embeddings") -> List[Any]:
         """Process multiple text chunks in parallel"""
         try:
             if task == "embeddings":
@@ -204,8 +196,7 @@ class NLPService:
                 summaries = await loop.run_in_executor(
                     None,
                     lambda: Parallel(n_jobs=self.max_workers)(
-                        delayed(self._summarize_sync)(chunk, 100, 20)
-                        for chunk in chunks
+                        delayed(self._summarize_sync)(chunk, 100, 20) for chunk in chunks
                     ),
                 )
                 return [s[0]["summary_text"] for s in summaries]
@@ -228,17 +219,17 @@ class NLPService:
 
     def _summarize_sync(self, text: str, max_length: int, min_length: int):
         """Synchronous summarization"""
-        return self.summarization_pipeline(
+        return self.summarization_pipeline(  # pylint: disable=not-callable
             text, max_length=max_length, min_length=min_length, do_sample=False
         )
 
     def _qa_sync(self, question: str, context: str):
         """Synchronous question answering"""
-        return self.qa_pipeline(question=question, context=context)
+        return self.qa_pipeline(question=question, context=context)  # pylint: disable=not-callable
 
     def _ner_sync(self, text: str):
         """Synchronous named entity recognition"""
-        return self.ner_pipeline(text)
+        return self.ner_pipeline(text)  # pylint: disable=not-callable
 
     def _generate_embeddings_sync(self, texts: List[str]):
         """Synchronous embedding generation"""
@@ -271,7 +262,7 @@ class NLPService:
             if english_count >= 3:
                 return "en"
             return "unknown"
-        except Exception as e:
+        except (AttributeError, ValueError, TypeError) as e:
             logger.error(f"Error in language detection: {str(e)}")
             return "unknown"
 
